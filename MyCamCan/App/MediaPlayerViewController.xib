@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="SF-UI-Text-Heavy-Custom.otf">
+            <string>SFUIText-Heavy</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="MediaPlayerViewController"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <viewController id="z2U-22-uaC" customClass="MediaPlayerViewController">
+            <view key="view" contentMode="scaleToFill" id="ZPO-x9-pno">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ha8-ue-Z7b" customClass="MediaPlayerView">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </view>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="h73-1G-7bo" userLabel="View - Post Details">
+                        <rect key="frame" x="0.0" y="542" width="375" height="125"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VT3-8g-z6p">
+                                <rect key="frame" x="155.5" y="80" width="65" height="45"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xYo-ig-uT5" userLabel="Button - like">
+                                        <rect key="frame" x="0.0" y="0.0" width="35" height="45"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="35" id="OQc-eu-DvL"/>
+                                            <constraint firstAttribute="height" constant="45" id="QtB-tg-sOB"/>
+                                        </constraints>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <state key="normal" image="Heart_Icon">
+                                            <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="likeButtonPressed:" destination="z2U-22-uaC" eventType="touchUpInside" id="uFT-jd-YX1"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Red-uP-8E0">
+                                        <rect key="frame" x="35" y="0.0" width="30" height="45"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
+                                        <state key="normal" title="0">
+                                            <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="likeCountPressed:" destination="z2U-22-uaC" eventType="touchUpInside" id="utP-vh-6cc"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tsn-8r-5fS" userLabel="Button - Avatar Image">
+                                <rect key="frame" x="150.5" y="0.0" width="75" height="75"/>
+                                <color key="backgroundColor" red="0.66666666669999997" green="0.66666666669999997" blue="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="75" id="c4B-DI-TUp"/>
+                                    <constraint firstAttribute="height" constant="75" id="umL-R7-NrI"/>
+                                </constraints>
+                                <color key="tintColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
+                                <state key="normal">
+                                    <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="avatarPressed:" destination="z2U-22-uaC" eventType="touchUpInside" id="omL-QZ-ga2"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="VT3-8g-z6p" secondAttribute="bottom" id="1jl-cN-FRX"/>
+                            <constraint firstAttribute="height" constant="125" id="L1Z-Tu-UUV"/>
+                            <constraint firstItem="VT3-8g-z6p" firstAttribute="centerX" secondItem="h73-1G-7bo" secondAttribute="centerX" id="Li7-HF-dCO"/>
+                            <constraint firstItem="tsn-8r-5fS" firstAttribute="centerX" secondItem="h73-1G-7bo" secondAttribute="centerX" id="Z2Z-j6-s7C"/>
+                            <constraint firstAttribute="bottom" secondItem="tsn-8r-5fS" secondAttribute="bottom" constant="50" id="ujD-ij-JM2"/>
+                        </constraints>
+                    </view>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BeW-u2-IVj" userLabel="Caption">
+                        <rect key="frame" x="20" y="120" width="335" height="48"/>
+                        <fontDescription key="fontDescription" name="SFUIText-Heavy" family="SF UI Text" pointSize="30"/>
+                        <state key="normal">
+                            <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        </state>
+                    </button>
+                    <button opaque="NO" alpha="0.60000002384185791" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DbC-aA-nqh">
+                        <rect key="frame" x="20" y="40" width="40" height="43"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="40" id="7gO-FR-GnZ"/>
+                            <constraint firstAttribute="height" constant="43" id="WCg-DG-HUL"/>
+                        </constraints>
+                        <state key="normal" image="close-wht">
+                            <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        </state>
+                        <connections>
+                            <action selector="donePressed:" destination="z2U-22-uaC" eventType="touchUpInside" id="xMA-Io-vkp"/>
+                        </connections>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="EQf-XD-DGk">
+                        <rect key="frame" x="305" y="46" width="50" height="31"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="50" id="rnk-9K-A4j"/>
+                            <constraint firstAttribute="height" constant="31" id="uOm-UK-1JJ"/>
+                        </constraints>
+                        <state key="normal" title="Share">
+                            <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        </state>
+                        <connections>
+                            <action selector="sharePressed:" destination="z2U-22-uaC" eventType="touchUpInside" id="tbw-hQ-8eo"/>
+                        </connections>
+                    </button>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <constraints>
+                    <constraint firstItem="7Rj-b4-Lh2" firstAttribute="trailing" secondItem="BeW-u2-IVj" secondAttribute="trailing" constant="20" id="434-Ym-Ha7"/>
+                    <constraint firstItem="7Rj-b4-Lh2" firstAttribute="trailing" secondItem="h73-1G-7bo" secondAttribute="trailing" id="8Ke-gw-exi"/>
+                    <constraint firstItem="7Rj-b4-Lh2" firstAttribute="bottom" secondItem="h73-1G-7bo" secondAttribute="bottom" id="9GL-vl-JpD"/>
+                    <constraint firstItem="7Rj-b4-Lh2" firstAttribute="bottom" secondItem="Ha8-ue-Z7b" secondAttribute="bottom" id="E1u-c5-DWH"/>
+                    <constraint firstItem="DbC-aA-nqh" firstAttribute="leading" secondItem="7Rj-b4-Lh2" secondAttribute="leading" constant="20" id="Ig0-De-dci"/>
+                    <constraint firstItem="7Rj-b4-Lh2" firstAttribute="trailing" secondItem="EQf-XD-DGk" secondAttribute="trailing" constant="20" id="Rgc-d5-gEN"/>
+                    <constraint firstItem="Ha8-ue-Z7b" firstAttribute="top" secondItem="7Rj-b4-Lh2" secondAttribute="top" constant="-20" id="WIN-20-R7K"/>
+                    <constraint firstItem="EQf-XD-DGk" firstAttribute="centerY" secondItem="DbC-aA-nqh" secondAttribute="centerY" id="bjB-tm-UhM"/>
+                    <constraint firstItem="BeW-u2-IVj" firstAttribute="leading" secondItem="7Rj-b4-Lh2" secondAttribute="leading" constant="20" id="cmo-yJ-Jo5"/>
+                    <constraint firstItem="BeW-u2-IVj" firstAttribute="centerX" secondItem="7Rj-b4-Lh2" secondAttribute="centerX" id="gDT-bi-f3H"/>
+                    <constraint firstItem="DbC-aA-nqh" firstAttribute="top" secondItem="7Rj-b4-Lh2" secondAttribute="top" constant="20" id="o9g-cE-RsK"/>
+                    <constraint firstItem="7Rj-b4-Lh2" firstAttribute="trailing" secondItem="Ha8-ue-Z7b" secondAttribute="trailing" id="ovV-8I-QK0"/>
+                    <constraint firstItem="Ha8-ue-Z7b" firstAttribute="leading" secondItem="7Rj-b4-Lh2" secondAttribute="leading" id="uKS-kQ-2l7"/>
+                    <constraint firstItem="h73-1G-7bo" firstAttribute="leading" secondItem="7Rj-b4-Lh2" secondAttribute="leading" id="vsK-GB-eYY"/>
+                    <constraint firstItem="BeW-u2-IVj" firstAttribute="top" secondItem="7Rj-b4-Lh2" secondAttribute="top" constant="100" id="yxg-S9-ukf"/>
+                </constraints>
+                <viewLayoutGuide key="safeArea" id="7Rj-b4-Lh2"/>
+            </view>
+            <connections>
+                <outlet property="avatarButton" destination="tsn-8r-5fS" id="hsw-Oy-xs9"/>
+                <outlet property="captionLabel" destination="BeW-u2-IVj" id="gtn-BP-hPe"/>
+                <outlet property="doneButton" destination="DbC-aA-nqh" id="ij3-o3-upB"/>
+                <outlet property="likeButton" destination="xYo-ig-uT5" id="tLb-ka-XXO"/>
+                <outlet property="likesCountButton" destination="Red-uP-8E0" id="Bdz-er-G6N"/>
+                <outlet property="mediaPlayerView" destination="Ha8-ue-Z7b" id="nvB-Ps-6mt"/>
+                <outlet property="postDetailsView" destination="h73-1G-7bo" id="qmh-M0-n1y"/>
+                <outlet property="shareButton" destination="EQf-XD-DGk" id="c3O-73-KGy"/>
+            </connections>
+            <point key="canvasLocation" x="-17.5" y="161.5"/>
+        </viewController>
+    </objects>
+    <resources>
+        <image name="Heart_Icon" width="25" height="25"/>
+        <image name="close-wht" width="25" height="25"/>
+    </resources>
+</document>

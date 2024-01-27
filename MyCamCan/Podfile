@@ -1,0 +1,35 @@
+# Uncomment this line to define a global platform for your project
+# platform :ios, '6.0'
+
+target 'Blog' do
+
+pod 'SDWebImage'
+pod 'APAddressBook'
+pod 'iCarousel'
+pod 'HysteriaPlayer'
+pod 'MBProgressHUD', '~> 0.9.1'
+pod 'SSKeychain'
+pod 'ASIHTTPRequest'
+pod 'AWSCore'
+pod 'AWSS3'
+pod 'AWSCognito'
+pod 'RSKImageCropper'
+pod 'RETrimControl'
+pod 'ILRemoteSearchBar'
+pod 'Fabric'
+pod 'Crashlytics'
+pod 'SDAVAssetExportSession', :git => 'https://github.com/rs/SDAVAssetExportSession.git'
+pod 'Firebase/Core'
+pod 'Firebase/AdMob'
+
+#Facebook
+pod 'FBSDKCoreKit'
+pod 'FBSDKLoginKit'
+pod 'FBSDKShareKit'
+
+end
+
+target 'BlogTests' do
+
+end
+

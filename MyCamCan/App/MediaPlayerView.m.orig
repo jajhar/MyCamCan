@@ -1,0 +1,1873 @@
+#import "MediaPlayerView.h"
+#import "SelectorQueue.h"
+#import "Media.h"
+#import "MediaContentPicture.h"
+#import "MediaContentPictureThumb.h"
+#import "MediaContentAudio.h"
+#import "MediaContentGPUImageMovie.h"
+#import "MediaContentMovieThumb.h"
+#import "BGMediaContentAnimatedGif.h"
+#import "BGViewMovieSlider.h"
+#import "FLAnimatedImageView.h"
+#import "FLAnimatedImage.h"
+#import "MBProgressHUD.h"
+#import "AppData.h"
+#import "NSURL+RefersLocalProperty.h"
+#import "BGAVPlayerList.h"
+#import <AVFoundation/AVFoundation.h>
+#import "DACircularProgressView.h"
+#import "ItunesMusicItem.h"
+
+/**
+ * These constants define MediaPlayerInterface
+ */
+typedef NS_ENUM(NSUInteger, MediaPlayerInterface) {
+    kMediaPlayerInterfaceNone,
+    kMediaPlayerInterfacePlayback
+};
+/**
+ * These constants define MediaPlayerVideoContentType
+ */
+typedef NS_ENUM(NSUInteger, MediaPlayerVideoContentType) {
+    kMediaPlayerVideoContentTypeNone,
+    kMediaPlayerVideoContentTypeStaticImage,
+    kMediaPlayerVideoContentTypeAnimatedGIF,
+    kMediaPlayerVideoContentTypeGPUImageMovie
+};
+/**
+ * These constants define MediaPlayerAudioContentType
+ */
+typedef NS_ENUM(NSUInteger, MediaPlayerAudioContentType) {
+    kMediaPlayerAudioContentTypeNone,
+    kMediaPlayerAudioContentTypeGPUImageMovie
+};
+
+
+static __weak MediaPlayerView *_lastActivePlayer = nil;
+
+
+@interface MediaPlayerView ()
+
+//L-1
+
+- (void)togglePlay;
+
+//L0
+/**
+ * This method is called action to play the media player when user want
+ */
+- (void)play;
+/**
+ * This method is called action to pause the media player when user want
+ */
+- (void)pause;
+/**
+ * This method is called action to resume the media player when user want
+ */
+- (void)resume;
+/**
+ * This method is called action to stop the media player when user want
+ */
+- (void)stop;
+
+//L1
+
+- (void)commonInit;
+
+@property (assign, nonatomic) MediaPlayerStatus status;
+
+- (void)setStatusN:(NSNumber *)statusNumber;
+
+@property (strong, nonatomic) SelectorQueue *selectorQueue;
+
+@property (strong, nonatomic) AVPlayer *musicPlayer;
+/**
+ * This method is called action to set media inner in media player
+ */
+- (void)setMediaInner:(Media *)media;
+/**
+ * This method is called action to play the media player from start activity
+ */
+- (void)playInner;
+/**
+ * This method is called action to play the media player from last active pause
+ */
+- (void)pauseInner;
+/**
+ * This method is called action to play the media player from last active resume
+ */
+- (void)resumeInner;
+/**
+ * This method is called action to play the media player from last active stop
+ */
+- (void)stopInner;
+
+- (void)contentPrepared:(id)info;
+/**
+ * This method is called action to start to set all media content information to media player
+ */
+- (void)startContentSupply:(id)info;
+/**
+ * This method is called action to set the video content to media player
+ */
+- (void)supplyVideoContent:(void *)content info:(id)info;
+/**
+ * This method is called action to set the audio content to media player
+ */
+- (void)supplyAudioContent:(void *)content info:(id)info;
+/**
+ * This method is called action to stop the media content supply to player
+ */
+- (void)stopContentSupply:(id)info;
+/**
+ * This method is called action to clear the media content
+ */
+- (void)contentWillBeCleared:(id)info;
+
+/**
+ * This method is called action to play the media player when user click the play buton
+ */
+- (void)playPressed:(UIButton *)button;
+
+//L2
+
+@property (strong, nonatomic, readonly) MediaContent *mediaContent;
+- (void)setMediaContent:(MediaContent *)mediaContent callback:(MediaContentCallback)callback;
+
+//L3
+
+@property (assign, nonatomic) MediaPlayerInterface interface;
+- (void)setInterface:(MediaPlayerInterface)interface mediaContent:(MediaContent *)mediaContent recentMediaContent:(MediaContent *)recentMediaContent;
+
+@property (assign, nonatomic) MediaPlayerVideoContentType videoContentType;
+- (void)setVideoContentType:(MediaPlayerVideoContentType)videoContentType mediaContent:(MediaContent *)mediaContent recentMediaContent:(MediaContent *)recentMediaContent;
+
+@property (assign, nonatomic) MediaPlayerAudioContentType audioContentType;
+- (void)setAudioContentType:(MediaPlayerAudioContentType)audioContentType mediaContent:(MediaContent *)mediaContent recentMediaContent:(MediaContent *)recentMediaContent;
+
+//L4
+
+- (void)showInterface:(MediaPlayerInterface)interface mediaContent:(MediaContent *)mediaContent;
+- (void)hideInterface:(MediaPlayerInterface)interface mediaContent:(MediaContent *)mediaContent;
+
+- (void)prepareToVideoContentType:(MediaPlayerVideoContentType)videoContentType mediaContent:(MediaContent *)mediaContent;
+- (void)breakFromVideoContentType:(MediaPlayerVideoContentType)videoContentType mediaContent:(MediaContent *)mediaContent;
+
+- (void)prepareToAudioContentType:(MediaPlayerAudioContentType)audioContentType mediaContent:(MediaContent *)mediaContent;
+- (void)breakFromAudioContentType:(MediaPlayerAudioContentType)audioContentType mediaContent:(MediaContent *)mediaContent;
+
+//L5
+
+//control interface
+@property (strong, nonatomic) UIButton *playButton;
+
+//presenting interface
+@property (strong, nonatomic) UIImageView *imageView;
+@property (strong, nonatomic) FLAnimatedImageView *gifImageView;
+//@property (strong, nonatomic) GPUImageView *gpuImageView;
+
+@property (strong, nonatomic) AVPlayer *moviePlayer;
+@property (strong, nonatomic) AVPlayerLayer *playerLayer;
+@property (strong, nonatomic) BGViewMovieSlider *movieSlider;
+@property (strong, nonatomic) AVPlayerItem *moviePlayerItem;
+@property (nonatomic) CGFloat timePlayed;
+@property (nonatomic, assign) BOOL sliderIsActive;
+@property (strong, nonatomic) MBProgressHUD *loadingIndicator;
+@property (strong, nonatomic) DACircularProgressView *progressView;
+@property (nonatomic, assign) BOOL isVideoLoaded;
+@property (nonatomic, assign) BOOL isMusicLoaded;
+@property (nonatomic, assign) BOOL isDownloadingMusic;
+@property (nonatomic, strong) UIView *playButtonBackgroundView;
+
+@end
+
+@implementation MediaPlayerView
+
+#pragma mark L-1
+/**
+ * This method is called to toggle between play,pause,stop.
+ */
+- (void)togglePlay {
+    switch (self.status) {
+        case kMediaPlayerStatusPaused:
+            [self resume];
+            break;
+        case kMediaPlayerStatusIdle:
+            [self play];
+            break;
+        case kMediaPlayerStatusPlaying:
+            [self pause];
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)toggleMovieSlider {
+    self.movieSlider.hidden = !self.movieSlider.hidden;
+}
+
+- (void)showMovieSlider:(BOOL)animated {
+//    
+//    self.movieSlider.hidden = NO;
+//    
+//    if(animated) {
+//        [UIView animateWithDuration:0.3 animations:^{
+//            self.movieSlider.alpha = 1.0;
+//        }];
+//    } else {
+//        self.movieSlider.alpha = 1.0;
+//    }
+    
+}
+
+- (void)hideMovieSlider:(BOOL)animated {
+    
+//    if(animated) {
+//        [UIView animateWithDuration:2.0 animations:^{
+//            self.movieSlider.alpha = 0.0;
+//        } completion:^(BOOL finished) {
+//            //self.movieSlider.hidden = YES;
+//        }];
+//    } else {
+//        self.movieSlider.alpha = 0.0;
+//        self.movieSlider.hidden = YES;
+//    }
+    
+}
+
+- (void)raiseMovieSlider {
+    CGRect frame = self.movieSlider.frame;
+    frame.origin.y = self.frame.size.height-140;
+    self.movieSlider.frame = frame;
+}
+
+- (void)lowerMovieSlider {
+    CGRect frame = self.movieSlider.frame;
+    frame.origin.y = self.frame.size.height-70;
+    self.movieSlider.frame = frame;
+}
+
++ (void)pauseLastActivePlayer {
+    MediaPlayerView *strongPlayer = _lastActivePlayer;
+    if (strongPlayer != nil) {
+        [strongPlayer pause];
+        strongPlayer.status = kMediaPlayerStatusPaused;
+    }
+    _lastActivePlayer = nil;
+}
+
+#pragma mark L0
+
+@synthesize intent = _intent;
+
+@synthesize media = _media;
+
+/**
+ * Call this method to setup the media player for a given Media object
+ */
+- (void)setMedia:(Media *)newValue {
+    //if (![DataModelObject modelObject:_media isEqualTo:newValue]) {
+    [self.selectorQueue perform:@selector(setMediaInner:) withObject:newValue];
+    //}
+}
+
+@synthesize repeat = _repeat;
+@synthesize mute = _mute;
+
+- (void)play {
+    if (self.status == kMediaPlayerStatusIdle) {
+        [self.selectorQueue perform:@selector(playInner)];
+    }
+}
+
+- (void)pause {
+    if (self.status == kMediaPlayerStatusPlaying) {
+        [self.selectorQueue perform:@selector(pauseInner)];
+    }
+}
+
+- (void)resume {
+    if (self.status == kMediaPlayerStatusPaused) {
+        [self.selectorQueue perform:@selector(resumeInner)];
+    }
+}
+
+- (void)stop {
+    if (self.status == kMediaPlayerStatusPlaying) {
+        [self.selectorQueue perform:@selector(stopInner)];
+    }
+}
+
+#pragma mark L1
+/**
+ * Proper initialization for MovieSlider, add observers to the view.
+ */
+- (void)commonInit {
+    SelectorQueue *queue = [SelectorQueue new];
+    queue.target = self;
+    _selectorQueue = queue;
+    _intent = kMediaPresentationIntentOriginal;
+    
+    _isVideoLoaded = NO;
+    _isMusicLoaded = NO;
+    _isDownloadingMusic = NO;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:_selectorQueue.target
+                                             selector:@selector(playerItemDidReachEnd:)
+                                                 name:AVPlayerItemDidPlayToEndTimeNotification
+                                               object:_moviePlayer];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:_selectorQueue.target
+                                             selector:@selector(playerItemDidReachEnd:)
+                                                 name:AVPlayerItemDidPlayToEndTimeNotification
+                                               object:_moviePlayer];
+    
+    self.movieSlider =[[[NSBundle mainBundle] loadNibNamed:@"BGViewMovieSlider"
+                                                     owner:nil
+                                                   options:nil] objectAtIndex:0];
+    
+    self.movieSlider.delegate = self;
+    
+    // initially hidden (only show full-screen)
+    self.movieSlider.hidden = YES;
+    
+    [self setupProgressView];
+    
+    // allows audio playback on movies
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:NULL];
+}
+
+- (void)setupProgressView {
+<<<<<<< HEAD
+//    [_progressView removeFromSuperview];
+//    _progressView = nil;
+//    // setup progress view
+//    _progressView = [[DACircularProgressView alloc] initWithFrame:CGRectMake(0.0, 0.0, 40.0, 40.0)];
+//    [_progressView setCenter:self.center];
+//    _progressView.autoresizingMask = UIViewAutoresizingNone;
+//    _progressView.roundedCorners = YES;
+//    _progressView.backgroundColor = [UIColor clearColor];
+//    [self addSubview:_progressView];
+=======
+    [_progressView removeFromSuperview];
+    _progressView = nil;
+    // setup progress view
+    _progressView = [[DACircularProgressView alloc] initWithFrame:CGRectMake(0.0, 0.0, 40.0, 40.0)];
+    [_progressView setCenter:self.center];
+    _progressView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin|UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin;
+    _progressView.roundedCorners = YES;
+    [self addSubview:_progressView];
+>>>>>>> altMoviePlayer
+}
+
+/**
+ * THis method is callled to add loading indicater to view.
+ */
+- (void)showLoadingIndicator {
+    [self.loadingIndicator removeFromSuperview];
+    self.loadingIndicator = nil;
+    self.loadingIndicator = [[MBProgressHUD alloc] initWithView:self];
+    self.loadingIndicator.color = [UIColor clearColor];
+    self.loadingIndicator.opacity = 1.0f;
+    self.loadingIndicator.userInteractionEnabled = NO;
+    self.loadingIndicator.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self addSubview:self.loadingIndicator];
+    [self bringSubviewToFront:self.loadingIndicator];
+    [self.loadingIndicator show:YES];
+}
+
+@synthesize status = _status;
+/**
+ *Change the status of play button,imageview based on media player status.
+ */
+- (void)setStatus:(MediaPlayerStatus)status {
+    if (_status != status) {
+        _status = status;
+        switch (_status) {
+            case kMediaPlayerStatusIdle:
+                self.gifImageView.hidden = YES;
+                self.imageView.hidden = YES;
+                self.playButton.selected = NO;
+                self.playButtonBackgroundView.hidden = NO;
+                break;
+            case kMediaPlayerStatusPaused:
+                self.gifImageView.hidden = YES;
+                self.imageView.hidden = YES;
+                self.playButton.selected = NO;
+<<<<<<< HEAD
+                self.playButtonBackgroundView.hidden = NO;
+
+                if(self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidPause:)]) {
+=======
+                
+                if(self && self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidPause:)]) {
+>>>>>>> altMoviePlayer
+                    [self.delegate mediaPlayerDidPause:self];
+                }
+                
+                break;
+            case kMediaPlayerStatusPlaying:
+                self.gifImageView.hidden = YES;
+                self.imageView.hidden = YES;
+                self.playButton.selected = YES;
+                self.playButtonBackgroundView.hidden = YES;
+                break;
+        }
+    }
+}
+/**
+ *
+ */
+- (void)setStatusN:(NSNumber *)statusNumber {
+    [self setStatus:[statusNumber unsignedIntegerValue]];
+}
+
+@synthesize selectorQueue = _selectorQueue;
+
+- (void)setMediaInner:(Media *)newValue {
+    [self.selectorQueue pause];
+    
+    __block MediaPlayerView *weakSelf = self;
+    
+    if (![DataModelObject modelObject:_media isEqualTo:newValue] || !_mediaContent) {
+        
+        _media = newValue;
+        
+        [self setMediaContent:[_media mediaContentForIntent:self.intent]
+                     callback:^(NSError *error, id assignedInfo) {
+                         [weakSelf showInterface:weakSelf.interface mediaContent:weakSelf.mediaContent];
+                     }];
+        
+        [self.selectorQueue resume];
+        
+    } else {
+        // The media content is already created so use it
+        [self setMediaContent:_mediaContent
+                     callback:^(NSError *error, id assignedInfo) {
+                         [weakSelf showInterface:weakSelf.interface mediaContent:weakSelf.mediaContent];
+                     }];
+        
+        [self.selectorQueue resume];
+    }
+}
+
+- (void)playInner {
+    // pause previous one
+    [MediaPlayerView pauseLastActivePlayer];
+    
+<<<<<<< HEAD
+    self.status = kMediaPlayerStatusPlaying;
+
+    if(self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidBeginPlaying:)]) {
+=======
+    if(self && self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidBeginPlaying:)]) {
+>>>>>>> altMoviePlayer
+        [self.delegate mediaPlayerDidBeginPlaying:self];
+    }
+    
+    _lastActivePlayer = self;
+    
+    [self.selectorQueue pause];
+    if ((_mediaContent != nil) && (self.status == kMediaPlayerStatusIdle) && !self.mediaContent.isStatic) {
+        [self.mediaContent startForTarget:self callback:^(NSError *error, id assignedInfo) {
+            if (error != nil) {
+                NSLog(@"MediaPlayerController could not start playing");
+            }
+            
+            self.timePlayed = CMTimeGetSeconds(self.moviePlayer.currentTime);
+            
+            [self.selectorQueue resume];
+        }];
+    } else {
+        [self.selectorQueue resume];
+    }
+}
+
+- (void)pauseInner {
+    [self.selectorQueue pause];
+    if(self.status == kMediaPlayerStatusPlaying){
+        [self.moviePlayer pause];
+        [self showMovieSlider:YES];
+        self.status = kMediaPlayerStatusIdle;
+    }
+    [self.selectorQueue resume];
+}
+
+- (void)resumeInner {
+    [MediaPlayerView pauseLastActivePlayer];
+    _lastActivePlayer = self;
+    
+<<<<<<< HEAD
+    if(self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidResumePlaying:)]) {
+=======
+    if(self && self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidResumePlaying:)]) {
+>>>>>>> altMoviePlayer
+        [self.delegate mediaPlayerDidResumePlaying:self];
+    }
+    
+    [self.selectorQueue pause];
+    if (self.status == kMediaPlayerStatusPaused) {
+        [self.mediaContent resumeForTarget:self callback:^(NSError *error, id assignedInfo) {
+            if (error != nil) {
+                NSLog(@"MediaPlayerController could not resume play");
+            }
+            
+            self.timePlayed = CMTimeGetSeconds(self.moviePlayer.currentTime);
+            
+            [self.selectorQueue resume];
+        }];
+    } else {
+        [self.selectorQueue resume];
+    }
+}
+
+- (void)stopInner {
+    [self.selectorQueue pause];
+    
+    [self showMovieSlider:YES];
+    
+    if (self.status == kMediaPlayerStatusPlaying) {
+        [self.mediaContent stopForTarget:self callback:^(NSError *error, id assignedInfo) {
+            if (error != nil) {
+                NSLog(@"MediaPlayerController could not stop playing");
+            }
+            [self.selectorQueue resume];
+        }];
+    } else {
+        [self.selectorQueue resume];
+    }
+}
+
+- (void)playPressed:(UIButton *)button {
+    
+    [self.selectorQueue pause];
+    if ((_mediaContent != nil) && !self.mediaContent.isStatic) {
+        switch (self.status) {
+            case kMediaPlayerStatusIdle: {
+                
+                [MediaPlayerView pauseLastActivePlayer];
+                _lastActivePlayer = self;
+                
+                if(self.moviePlayer.currentItem.playbackLikelyToKeepUp) {
+                    [self.loadingIndicator hide:NO];
+                    [self.moviePlayer play];
+                } else {
+                    [self showLoadingIndicator];
+                }
+                
+                self.status = kMediaPlayerStatusPlaying;
+                
+<<<<<<< HEAD
+                if(self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidBeginPlaying:)]) {
+=======
+                if(self && self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidBeginPlaying:)]) {
+>>>>>>> altMoviePlayer
+                    [self.delegate mediaPlayerDidBeginPlaying:self];
+                }
+                
+                [self.selectorQueue resume];
+                
+                break;
+            }
+            case kMediaPlayerStatusPaused: {
+                
+                [MediaPlayerView pauseLastActivePlayer];
+                
+                self.status = kMediaPlayerStatusPlaying;
+                _lastActivePlayer = self;
+                
+                if(self.moviePlayer.currentItem.playbackLikelyToKeepUp) {
+                    [self.loadingIndicator hide:NO];
+                    [self.moviePlayer play];
+                } else {
+                    [self showLoadingIndicator];
+                }
+                
+                self.timePlayed = CMTimeGetSeconds(self.moviePlayer.currentTime);
+                
+<<<<<<< HEAD
+                if(self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidBeginPlaying:)]) {
+=======
+                if(self && self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidBeginPlaying:)]) {
+>>>>>>> altMoviePlayer
+                    [self.delegate mediaPlayerDidBeginPlaying:self];
+                }
+                
+                [self.selectorQueue resume];
+                
+                break;
+            }
+            case kMediaPlayerStatusPlaying: {
+                
+                [self.loadingIndicator hide:NO];
+                
+                [self showMovieSlider:YES];
+                [self.moviePlayer pause];
+                self.status = kMediaPlayerStatusPaused;
+                
+                self.timePlayed = CMTimeGetSeconds(self.moviePlayer.currentTime);
+                
+                [self.selectorQueue resume];
+            }
+                break;
+            default:
+                break;
+        }
+    } else {
+        [self.selectorQueue resume];
+    }
+}
+
+#pragma mark L2
+
+@synthesize mediaContent = _mediaContent;
+
+/**
+ *<p>
+ *  This method will setup the Media Player interface based on the type of MediaContent that is generated from the given Media object.
+ *  The types of content that are available are Picture, GIF, Movie, and Audio.
+ */
+- (void)setMediaContent:(MediaContent *)mediaContent callback:(MediaContentCallback)callback {
+    
+    if (_mediaContent != mediaContent) {
+        
+        __block MediaPlayerView *weakSelf = self;
+        
+        void (^clearingDoneBlock)(NSError *error,id assignedData) = ^(NSError *error,id assignedData) {
+            
+            [weakSelf setupInterfaceWithMediaContent:mediaContent];
+            
+            if (_mediaContent == nil) {
+                if(callback != NULL){
+                    callback(nil,nil);
+                }
+            } else {
+                [_mediaContent prepareForTarget:weakSelf callback:callback];
+            }
+        };
+        
+        if (_mediaContent == nil) {
+            clearingDoneBlock(nil, nil);
+        } else {
+            [_mediaContent clearForTarget:self callback:clearingDoneBlock];
+        }
+    } else {
+        [_mediaContent clearForTarget:self callback:^(NSError *error, id assignedInfo) {
+            [self setupInterfaceWithMediaContent:mediaContent];
+            [_mediaContent prepareForTarget:self callback:callback];
+        }];
+    }
+}
+
+
+- (void)setupInterfaceWithMediaContent:(MediaContent *)mediaContent {
+    MediaContent *recentMediaContent = _mediaContent;
+    _mediaContent = mediaContent;
+    
+    // if type image/picture
+    if ([_mediaContent isKindOfClass:[MediaContentPicture class]] ||
+        [_mediaContent isKindOfClass:[MediaContentPictureThumb class]] ||
+        [_mediaContent isKindOfClass:[MediaContentMovieThumb class]]) {
+        
+        [self setInterface:kMediaPlayerInterfaceNone
+              mediaContent:_mediaContent
+        recentMediaContent:recentMediaContent];
+        
+        
+        [self setVideoContentType:kMediaPlayerVideoContentTypeStaticImage
+                     mediaContent:_mediaContent
+               recentMediaContent:recentMediaContent];
+        
+        
+        [self setAudioContentType:kMediaPlayerAudioContentTypeNone
+                     mediaContent:_mediaContent
+               recentMediaContent:recentMediaContent];
+        
+        
+        // if type animated GIF
+    } else if ([_mediaContent isKindOfClass:[BGMediaContentAnimatedGif class]]) {
+        
+        [self setInterface:kMediaPlayerInterfaceNone
+              mediaContent:_mediaContent
+        recentMediaContent:recentMediaContent];
+        
+        
+        [self setVideoContentType:kMediaPlayerVideoContentTypeAnimatedGIF
+                     mediaContent:_mediaContent
+               recentMediaContent:recentMediaContent];
+        
+        
+        [self setAudioContentType:kMediaPlayerAudioContentTypeNone
+                     mediaContent:_mediaContent
+               recentMediaContent:recentMediaContent];
+        
+        
+        // if type audio
+    } else if ([_mediaContent isKindOfClass:[MediaContentAudio class]]) {
+        
+        
+        [self setInterface:kMediaPlayerInterfaceNone
+              mediaContent:_mediaContent
+        recentMediaContent:recentMediaContent];
+        
+        
+        [self setVideoContentType:kMediaPlayerVideoContentTypeNone
+                     mediaContent:_mediaContent
+               recentMediaContent:recentMediaContent];
+        
+        
+        [self setAudioContentType:kMediaPlayerAudioContentTypeNone
+                     mediaContent:_mediaContent
+               recentMediaContent:recentMediaContent];
+        
+        
+        // if type video/movie
+    } else if ([_mediaContent isKindOfClass:[MediaContentGPUImageMovie class]]) {
+        
+        
+        //fast tweak
+        if (self.intent == kMediaPresentationIntentOriginal) {
+            
+            [self setInterface:kMediaPlayerInterfacePlayback
+                  mediaContent:_mediaContent
+            recentMediaContent:recentMediaContent];
+            
+        } else {
+            
+            [self setInterface:kMediaPlayerInterfaceNone
+                  mediaContent:_mediaContent
+            recentMediaContent:recentMediaContent];
+            
+        }
+        
+        
+        [self setVideoContentType:kMediaPlayerVideoContentTypeGPUImageMovie
+                     mediaContent:_mediaContent
+               recentMediaContent:recentMediaContent];
+        
+        
+        [self setAudioContentType:kMediaPlayerAudioContentTypeGPUImageMovie
+                     mediaContent:_mediaContent
+               recentMediaContent:recentMediaContent];
+        
+        
+    } else {
+        
+        [self setInterface:kMediaPlayerInterfaceNone
+              mediaContent:_mediaContent
+        recentMediaContent:recentMediaContent];
+        
+        [self setVideoContentType:kMediaPlayerVideoContentTypeNone
+                     mediaContent:_mediaContent
+               recentMediaContent:recentMediaContent];
+        
+        [self setAudioContentType:kMediaPlayerAudioContentTypeNone
+                     mediaContent:_mediaContent
+               recentMediaContent:recentMediaContent];
+    }
+    
+    [self hideInterface:_interface mediaContent:_mediaContent];
+}
+
+/**
+ *<p>
+ *Tell the player to do nothing when it reaches the end of the video
+ * It will come back to this method when it's done
+ */
+- (void) playerItemDidReachEnd: (NSNotification *)notification
+{
+<<<<<<< HEAD
+    
+    [self pause];
+    
+    // Set it back to the beginning
+    [_moviePlayer seekToTime: kCMTimeZero];
+    [self.musicPlayer seekToTime:kCMTimeZero];
+    
+    self.imageView.hidden = YES;
+    
+    if(self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidStopPlaying:)]) {
+        [self.delegate mediaPlayerDidStopPlaying:self];
+=======
+    if(_moviePlayer)
+    {
+        // Set it back to the beginning
+        [_moviePlayer seekToTime: kCMTimeZero];
+        [self pause];
+        //    self.imageView.hidden = YES;
+        
+        @try {
+            if(self && self.delegate && [self.delegate respondsToSelector:@selector(mediaPlayerDidStopPlaying:)]) {
+                [self.delegate mediaPlayerDidStopPlaying:self];
+            }
+        }
+        @catch (NSException *exception) {
+            // do nuthin
+        }
+        
+        self.timePlayed = CMTimeGetSeconds(self.moviePlayer.currentTime);
+        
+        
+        _moviePlayer.actionAtItemEnd = AVPlayerActionAtItemEndNone;
+        
+>>>>>>> altMoviePlayer
+    }
+}
+
+#pragma mark L3
+
+@synthesize interface = _interface;
+/**
+ * This method is called to recent media content to medi palyer interface.
+ */
+- (void)setInterface:(MediaPlayerInterface)interface mediaContent:(MediaContent *)mediaContent recentMediaContent:(MediaContent *)recentMediaContent {
+    if ((_interface != interface) || (mediaContent != recentMediaContent)) {
+        [self hideInterface:_interface mediaContent:recentMediaContent];
+        _interface = interface;
+        [self showInterface:_interface mediaContent:mediaContent];
+    }
+}
+
+@synthesize videoContentType = _videoContentType;
+/**
+ * This method is called to set up the video content type.
+ */
+- (void)setVideoContentType:(MediaPlayerVideoContentType)videoContentType mediaContent:(MediaContent *)mediaContent recentMediaContent:(MediaContent *)recentMediaContent {
+    if ((_videoContentType != videoContentType) || (mediaContent != recentMediaContent)) {
+        [self breakFromVideoContentType:_videoContentType mediaContent:recentMediaContent];
+        _videoContentType = videoContentType;
+        [self prepareToVideoContentType:_videoContentType mediaContent:mediaContent];
+    }
+}
+
+@synthesize audioContentType = _audioContentType;
+/**
+ * This method is called to set up the audio content type.
+ */
+- (void)setAudioContentType:(MediaPlayerAudioContentType)audioContentType mediaContent:(MediaContent *)mediaContent recentMediaContent:(MediaContent *)recentMediaContent {
+    if ((_audioContentType != audioContentType) || (mediaContent != recentMediaContent)) {
+        [self breakFromAudioContentType:_audioContentType mediaContent:recentMediaContent];
+        _audioContentType = audioContentType;
+        [self prepareToAudioContentType:_audioContentType mediaContent:mediaContent];
+    }
+}
+
+#pragma mark L4
+/**
+ * This method is called to add play button,moviesilder based on the interface type.
+ */
+- (void)showInterface:(MediaPlayerInterface)interface mediaContent:(MediaContent *)mediaContent {
+    switch (interface) {
+        case kMediaPlayerInterfaceNone:
+            break;
+        case kMediaPlayerInterfacePlayback:
+            
+            // add thumb imageview
+            if(!self.imageView) {
+                [self.imageView removeFromSuperview];
+                self.imageView = [UIImageView new];
+                self.imageView.contentMode = UIViewContentModeScaleAspectFill;
+                [self addSubview:self.imageView];
+            }
+            
+            // add play button
+            if(!self.playButton) {
+                [self.playButton removeFromSuperview];
+                self.playButton = [UIButton new];
+                [self.playButtonBackgroundView removeFromSuperview];
+                self.playButtonBackgroundView = [UIView new];
+                self.playButtonBackgroundView.frame = CGRectMake(0, 0, 50, 50);
+                self.playButtonBackgroundView.center = self.center;
+                self.playButtonBackgroundView.backgroundColor = [UIColor blackColor];
+                self.playButtonBackgroundView.alpha = 0.7;
+                self.playButtonBackgroundView.clipsToBounds = YES;
+                self.playButtonBackgroundView.layer.cornerRadius = 25.0;
+                [self addSubview:self.playButtonBackgroundView];
+                
+                [self.playButton setImage:[[UIImage imageNamed:@"video_play"]
+                                           imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+                [self.playButton setTintColor:[UIColor whiteColor]];
+                
+                [self.playButton setImage:/*empty image*/[UIImage new] forState:UIControlStateSelected];
+                [self.playButton addTarget:self action:@selector(playPressed:) forControlEvents:UIControlEventTouchUpInside];
+                [self addSubview:self.playButton];
+            }
+            
+            // add movie slider
+            [self.movieSlider setFrame:CGRectMake(0, 0, 320, 50)];
+            [self.movieSlider setCenter:CGPointMake(self.center.x, self.movieSlider.center.y)];
+            [self hideMovieSlider:NO];
+            [self addSubview:self.movieSlider];
+            [self lowerMovieSlider];
+            
+            [self setNeedsLayout];
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)removePlayerObservers {
+    @try{
+        [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"status"];
+        
+    }@catch(id anException){
+//        NSLog(@"Exception [removePlayerObservers] - Failed to remove status observer");
+    }
+    
+    @try{
+        [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
+        
+    }@catch(id anException){
+//        NSLog(@"Exception [removePlayerObservers] - Failed to remove playbackBufferEmpty observer");
+        
+    }
+    
+    @try{
+        [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"playbackLikelyToKeepUp"];
+        
+    }@catch(id anException){
+//        NSLog(@"Exception [removePlayerObservers] - Failed to remove playbackLikelyToKeepUp observer");
+    }
+    
+    @try{
+        [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
+        
+    }@catch(id anException){
+//        NSLog(@"Exception [removePlayerObservers] - Failed to remove loadedTimeRanges observer");
+    }
+}
+
+/**
+ * removes play button and movie slider from the view when interface is playback.
+ */
+- (void)hideInterface:(MediaPlayerInterface)interface mediaContent:(MediaContent *)mediaContent {
+    switch (interface) {
+        case kMediaPlayerInterfaceNone:
+            break;
+        case kMediaPlayerInterfacePlayback:
+            [self.playButton removeFromSuperview];
+            [self.movieSlider removeFromSuperview];
+            self.playButton = nil;
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)openVideoPlayerForMedia:(Media *)media {
+    
+#if !TARGET_IPHONE_SIMULATOR
+    
+    self.moviePlayer = nil;
+    self.playerLayer = nil;
+    
+    
+    [self removePlayerObservers];
+    
+    if((!self.moviePlayer || [(AVURLAsset *)self.moviePlayer.currentItem.asset URL] != media.mediaUrl)) {
+        
+        BGAVPlayerList *playerList = [BGAVPlayerList sharedInstance];
+        
+        self.moviePlayer = [playerList playerForURL:media.mediaUrl];
+        
+        if(self.moviePlayer != nil) {
+            // movie player already exists so let's try to re-use it
+            
+            self.moviePlayerItem = [AVPlayerItem playerItemWithAsset:_moviePlayer.currentItem.asset];
+            
+            // remove it because we are going to re-add it to the list as the latest (newest) player
+            [self removePlayerObservers];
+            
+            [playerList removePlayer:self.moviePlayer];
+            
+        } else {
+            // movie player not found for this url so make a new item
+            self.moviePlayerItem = [AVPlayerItem playerItemWithURL:media.mediaUrl];
+        }
+        
+        self.moviePlayer = [AVPlayer playerWithPlayerItem:self.moviePlayerItem];
+        
+        self.moviePlayerItem = _moviePlayer.currentItem;
+        
+        [self.playerLayer removeFromSuperlayer];
+        
+        _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_moviePlayer];
+        _playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        self.moviePlayer.actionAtItemEnd = AVPlayerActionAtItemEndNone;
+        
+        // add player
+        [self.layer addSublayer:self.playerLayer];
+        
+        [self setNeedsLayout];
+        
+        [playerList addPlayer:self.moviePlayer];
+        
+    } else {
+        // do nothing, already exists
+        self.moviePlayerItem = _moviePlayer.currentItem;
+    }
+    
+    if(_moviePlayer && _moviePlayer.currentItem) {
+        
+        @try{
+            [self.moviePlayer.currentItem addObserver:self forKeyPath:@"status" options:0 context:nil];
+            [self.moviePlayer.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:0 context:nil];
+            [self.moviePlayer.currentItem addObserver:self forKeyPath:@"playbackLikelyToKeepUp" options:0 context:nil];
+            [self.moviePlayer.currentItem addObserver:self forKeyPath:@"loadedTimeRanges" options:0 context:nil];
+            
+        }@catch(id exception) {
+            NSLog(@"Exception: Failed to add observers to movie player");
+            
+            // do nothing
+        }
+    }
+#endif
+    
+}
+
+//- (void)closeVideoPlayerForMedia:(Media *)media {
+//
+//#if !TARGET_IPHONE_SIMULATOR
+//
+//    if((self.moviePlayer == nil || [(AVURLAsset *)self.moviePlayer.currentItem.asset URL] != media.mediaUrl)) {
+//
+//    } else {
+//        [self removePlayerObservers];
+////        [self.playerLayer removeFromSuperlayer];
+////        self.moviePlayerItem = nil;
+////        self.playerLayer = nil;
+////        self.moviePlayer = nil;
+////        [self bringSubviewToFront:self.imageView];
+//        [self pause];
+////        self.imageView.hidden = NO;
+//
+//        [self setNeedsLayout];
+//
+//    }
+//
+//
+//#endif
+//
+//
+//
+//}
+
+
+
+- (void)closeVideoPlayerForMedia:(Media *)media {
+    
+#if !TARGET_IPHONE_SIMULATOR
+    
+    if((self.moviePlayer == nil || [(AVURLAsset *)self.moviePlayer.currentItem.asset URL] != media.mediaUrl)) {
+        
+    } else {
+        [self removePlayerObservers];
+        [self.playerLayer removeFromSuperlayer];
+        self.moviePlayerItem = nil;
+        //        self.playerLayer = nil;
+        self.moviePlayer = nil;
+        [self bringSubviewToFront:self.imageView];
+        [self pause];
+        
+        [self setNeedsLayout];
+        
+    }
+    
+    
+#endif
+    
+    
+    
+}
+
+- (void)showThumbnail:(Media *)media {
+    
+}
+
+- (void)prepareToVideoContentType:(MediaPlayerVideoContentType)videoContentType mediaContent:(MediaContent *)mediaContent {
+    
+    switch (videoContentType) {
+            
+        case kMediaPlayerVideoContentTypeNone:
+            break;
+            
+        case kMediaPlayerVideoContentTypeStaticImage:
+            self.imageView = [UIImageView new];
+            self.imageView.contentMode = UIViewContentModeScaleAspectFill;
+            [self addSubview:self.imageView];
+            [self setNeedsLayout];
+            [mediaContent addTarget:self];
+            break;
+            
+        case kMediaPlayerVideoContentTypeAnimatedGIF:
+            [self.gifImageView removeFromSuperview];
+            self.gifImageView = [FLAnimatedImageView new];
+            self.gifImageView.contentMode = UIViewContentModeScaleAspectFill;
+            [self addSubview:self.gifImageView];
+            [self setNeedsLayout];
+            [mediaContent addTarget:self];
+            break;
+            
+        case kMediaPlayerVideoContentTypeGPUImageMovie:
+        {
+            
+            self.imageView = [UIImageView new];
+            self.imageView.contentMode = UIViewContentModeScaleAspectFill;
+            [self addSubview:self.imageView];
+            [self setNeedsLayout];
+            
+            
+<<<<<<< HEAD
+            if(_moviePlayer && _moviePlayer.currentItem) {
+                
+                [self removePlayerObservers];
+
+                
+                @try{
+                    [self.moviePlayer.currentItem addObserver:self forKeyPath:@"status" options:0 context:nil];
+                    [self.moviePlayer.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:0 context:nil];
+                    [self.moviePlayer.currentItem addObserver:self forKeyPath:@"playbackLikelyToKeepUp" options:0 context:nil];
+                    [self.moviePlayer.currentItem addObserver:self forKeyPath:@"loadedTimeRanges" options:0 context:nil];
+                    
+                }@catch(id exception) {
+//                    NSLog(@"Exception: Failed to add observers to movie player");
+                    
+                    // do nothing
+                }
+                
+                @try{
+                    [self.musicPlayer.currentItem addObserver:self forKeyPath:@"status" options:0 context:nil];
+                    [self.musicPlayer.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:0 context:nil];
+                    [self.musicPlayer.currentItem addObserver:self forKeyPath:@"playbackLikelyToKeepUp" options:0 context:nil];
+                    [self.musicPlayer.currentItem addObserver:self forKeyPath:@"loadedTimeRanges" options:0 context:nil];
+                    
+                }@catch(id exception) {
+//                    NSLog(@"Exception: Failed to add observers to music player");
+                    
+                    // do nothing
+                }
+            }
+#endif
+=======
+            //#if !TARGET_IPHONE_SIMULATOR
+            //
+            //            self.moviePlayer = nil;
+            //            self.playerLayer = nil;
+            //
+            //
+            //            [self removePlayerObservers];
+            //
+            //            if((!self.moviePlayer || [(AVURLAsset *)self.moviePlayer.currentItem.asset URL] != _media.mediaUrl)) {
+            //
+            //                VXAVPlayerList *playerList = [VXAVPlayerList sharedInstance];
+            //
+            //                self.moviePlayer = [playerList playerForURL:self.media.mediaUrl];
+            //
+            //                if(self.moviePlayer != nil) {
+            //                    // movie player already exists so let's try to re-use it
+            //
+            //                    self.moviePlayerItem = [AVPlayerItem playerItemWithAsset:_moviePlayer.currentItem.asset];
+            //
+            //                    // remove it because we are going to re-add it to the list as the latest (newest) player
+            //                    [self removePlayerObservers];
+            //
+            //                    [playerList removePlayer:self.moviePlayer];
+            //
+            //                } else {
+            //                    // movie player not found for this url so make a new item
+            //                    self.moviePlayerItem = [AVPlayerItem playerItemWithURL:self.media.mediaUrl];
+            //                }
+            //
+            //                self.moviePlayer = [AVPlayer playerWithPlayerItem:self.moviePlayerItem];
+            //
+            //                self.moviePlayerItem = _moviePlayer.currentItem;
+            //
+            //                [self.playerLayer removeFromSuperlayer];
+            //
+            //                _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_moviePlayer];
+            //                _playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+            //                self.moviePlayer.actionAtItemEnd = AVPlayerActionAtItemEndNone;
+            //
+            //                // add player
+            //                [self.layer addSublayer:self.playerLayer];
+            //
+            //                [self setNeedsLayout];
+            //
+            //                [playerList addPlayer:self.moviePlayer];
+            //
+            //            } else {
+            //                // do nothing, already exists
+            //                self.moviePlayerItem = _moviePlayer.currentItem;
+            //            }
+            //
+            //            if(_moviePlayer && _moviePlayer.currentItem) {
+            //
+            //                @try{
+            //                    [self.moviePlayer.currentItem addObserver:self forKeyPath:@"status" options:0 context:nil];
+            //                    [self.moviePlayer.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:0 context:nil];
+            //                    [self.moviePlayer.currentItem addObserver:self forKeyPath:@"playbackLikelyToKeepUp" options:0 context:nil];
+            //                    [self.moviePlayer.currentItem addObserver:self forKeyPath:@"loadedTimeRanges" options:0 context:nil];
+            //
+            //                }@catch(id exception) {
+            //                    NSLog(@"Exception: Failed to add observers to movie player");
+            //
+            //                    // do nothing
+            //                }
+            //            }
+            //#endif
+>>>>>>> altMoviePlayer
+            
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+- (void)breakFromVideoContentType:(MediaPlayerVideoContentType)videoContentType mediaContent:(MediaContent *)mediaContent {
+    switch (videoContentType) {
+        case kMediaPlayerVideoContentTypeNone:
+            break;
+        case kMediaPlayerVideoContentTypeStaticImage:
+            [mediaContent removeTarget:self];
+            [self.imageView removeFromSuperview];
+            [self.gifImageView removeFromSuperview];
+            [self setupProgressView];
+            self.gifImageView = nil;
+            self.imageView = nil;
+            break;
+        case kMediaPlayerVideoContentTypeGPUImageMovie:
+            
+            [self removePlayerObservers];
+            
+            //            @try{
+            //                [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"status"];
+            //
+            //            }@catch(id anException){
+            //                NSLog(@"Exception [breakFromVideoContentType] - Failed to remove status observer");
+            //            }
+            //
+            //            @try{
+            //                [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
+            //
+            //            }@catch(id anException){
+            //                NSLog(@"Exception [breakFromVideoContentType] - Failed to remove playbackBufferEmpty observer");
+            //
+            //            }
+            //
+            //            @try{
+            //                [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"playbackLikelyToKeepUp"];
+            //
+            //            }@catch(id anException){
+            //                NSLog(@"Exception [breakFromVideoContentType] - Failed to remove playbackLikelyToKeepUp observer");
+            //            }
+            //
+            //            @try{
+            //                [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
+            //
+            //            }@catch(id anException){
+            //                NSLog(@"Exception [breakFromVideoContentType] - Failed to remove loadedTimeRanges observer");
+            //            }
+            
+            
+            [self.playerLayer removeFromSuperlayer];
+            self.playerLayer = nil;
+            self.moviePlayer = nil;
+            //self.moviePlayerItem = nil;
+            //[mediaContent removeTarget:self.gpuImageView];
+            //[self.gpuImageView removeFromSuperview];
+            //self.gpuImageView = nil;
+            [self setupProgressView];
+            [self.imageView removeFromSuperview];
+            self.imageView = nil;
+            //            [self.gifImageView removeFromSuperview];
+            //            self.gifImageView = nil;
+            break;
+        case kMediaPlayerVideoContentTypeAnimatedGIF:
+            [self.imageView removeFromSuperview];
+            self.imageView = nil;
+            [self.gifImageView removeFromSuperview];
+            [self setupProgressView];
+            self.gifImageView = nil;
+        default:
+            break;
+    }
+}
+
+- (void)prepareToAudioContentType:(MediaPlayerAudioContentType)audioContentType mediaContent:(MediaContent *)mediaContent {
+    switch (audioContentType) {
+        case kMediaPlayerAudioContentTypeNone:
+            break;
+        case kMediaPlayerAudioContentTypeGPUImageMovie:
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)breakFromAudioContentType:(MediaPlayerAudioContentType)audioContentType mediaContent:(MediaContent *)mediaContent {
+    switch (audioContentType) {
+        case kMediaPlayerAudioContentTypeNone:
+            break;
+        case kMediaPlayerAudioContentTypeGPUImageMovie:
+        default:
+            break;
+    }
+}
+
+#pragma mark L5
+
+@synthesize playButton = _playButton;
+@synthesize imageView = _imageView;
+@synthesize gifImageView = _gifImageView;
+//@synthesize gpuImageView = _gpuImageView;
+
+#pragma mark - Inherited
+
+#pragma mark NSObject
+/**
+ * This method is called to deallocate the memory occupaid by the movie player,observers.
+ */
+- (void)dealloc {
+    [self removePlayerObservers];
+    
+    [self setMediaContent:nil callback:NULL];
+    [[NSNotificationCenter defaultCenter] removeObserver:_selectorQueue.target
+                                                    name:AVPlayerItemDidPlayToEndTimeNotification
+                                                  object:_moviePlayer];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    self.delegate = nil;
+    
+    [self.gifImageView removeFromSuperview];
+    self.gifImageView = nil;
+}
+
+#pragma mark NSObject(NSCoding)
+/**
+ * Returns an object initialized from data in a given unarchiver
+ */
+- (id)initWithCoder:(NSCoder *)aDecoder {
+    if ((self = [super initWithCoder:aDecoder]) != nil) {
+        [self commonInit];
+    }
+    return self;
+}
+
+#pragma mark UIView
+/**
+ * Initializes and returns a newly allocated view object with the specified frame rectangle
+ */
+- (id)initWithFrame:(CGRect)frame {
+    if ((self = [super initWithFrame:frame]) != nil) {
+        [self commonInit];
+    }
+    return self;
+}
+/**
+ * This implementation uses any constraints to determine the size and position of any subviews.
+ */
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    
+    //self.gpuImageView.frame = self.bounds;
+    self.gifImageView.frame = self.bounds;
+    self.imageView.frame = self.bounds;
+    self.playButton.frame = self.bounds;
+    self.playerLayer.frame = self.bounds;
+<<<<<<< HEAD
+    [_progressView setCenter:self.center];
+    
+    self.playButtonBackgroundView.center = self.center;
+
+=======
+    
+>>>>>>> altMoviePlayer
+    [self bringSubviewToFront:self.imageView];
+    [self bringSubviewToFront:self.playButton];
+    [self bringSubviewToFront:self.movieSlider];
+    [self bringSubviewToFront:self.loadingIndicator];
+    
+    [[UIApplication sharedApplication].delegate.window bringSubviewToFront:self.movieSlider];
+    [self.movieSlider setCenter:CGPointMake(self.center.x, self.movieSlider.center.y)];
+}
+/**
+ * Unlinks the view from its superview and its window, and removes it from the responder chain.
+ */
+- (void)removeFromSuperview {
+    
+    [self removePlayerObservers];
+    
+    //    @try{
+    //        [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"status"];
+    //
+    //    }@catch(id anException){
+    //        NSLog(@"Exception [removeFromSuperview] - Failed to remove status observer");
+    //    }
+    //
+    //    @try{
+    //        [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
+    //
+    //    }@catch(id anException){
+    //        NSLog(@"Exception [removeFromSuperview] - Failed to remove playbackBufferEmpty observer");
+    //
+    //    }
+    //
+    //    @try{
+    //        [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"playbackLikelyToKeepUp"];
+    //
+    //    }@catch(id anException){
+    //        NSLog(@"Exception [removeFromSuperview] - Failed to remove playbackLikelyToKeepUp observer");
+    //    }
+    //
+    //    @try{
+    //        [self.moviePlayer.currentItem removeObserver:self forKeyPath:@"loadedTimeRanges"];
+    //
+    //    }@catch(id anException){
+    //        NSLog(@"Exception [breakFromVideoContentType] - Failed to remove loadedTimeRanges observer");
+    //    }
+    
+    [self setMediaContent:nil callback:NULL];
+    [[NSNotificationCenter defaultCenter] removeObserver:_selectorQueue.target
+                                                    name:AVPlayerItemDidPlayToEndTimeNotification
+                                                  object:_moviePlayer];
+    
+    
+    
+    [self.gifImageView removeFromSuperview];
+    self.gifImageView = nil;
+    
+    [super removeFromSuperview];
+}
+
+#pragma mark - Protocols
+
+#pragma mark MediaContentTarget
+
+/**
+ *<p>
+ *  This method will be called when the MediaContent is finished being generated for the given Media object
+ *  If the content is coming from the web, we will load the content directly using third party loaders such as SDWebImage and FLAnimatedImage.
+ */
+- (void)contentPrepared:(id)info {
+    switch (self.videoContentType) {
+        case kMediaPlayerVideoContentTypeStaticImage:
+            
+            if(![[self.media.mediaUrl scheme] isEqualToString:@"assets-library"] &&
+               ![self.media.mediaUrl isFileURL] &&
+               ![self.media.mediaUrl refersLocalProperty])
+            {
+                // from the web
+                [self setupProgressView];
+                
+                __block DACircularProgressView *blockProgressView = self.progressView;
+                
+                __block MediaPlayerView *blockSelf = self;
+                
+                
+                [self.imageView sd_setImageWithURL:self.media.mediaUrl
+                                  placeholderImage:nil
+                                           options:0
+                                          progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                                              CGFloat progress = ((CGFloat)receivedSize / (CGFloat)expectedSize);
+                                              dispatch_async(dispatch_get_main_queue(), ^{
+                                                  [blockProgressView setProgress:progress animated:NO];
+                                              });
+                                          } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                              
+//                                              if(image.size.width > 0.0 && image.size.height > 0.0)
+//                                              {
+//                                                  NSString *urlString = [self.media.mediaUrl absoluteString];
+//                                                  if(blockSelf.delegate && [blockSelf.delegate respondsToSelector:@selector(mediaPlayerWantsResizeWithMediaSize:forUrlString:)]) {
+//                                                      dispatch_async(dispatch_get_main_queue(), ^{
+//                                                          [blockSelf.delegate mediaPlayerWantsResizeWithMediaSize:image.size forUrlString:urlString];
+//                                                      });
+//                                                      
+//                                                  }
+//                                              }
+                                              
+                                              [blockProgressView removeFromSuperview];
+                                              blockProgressView = nil;
+                                              
+//                                              if(!image || error) {
+//                                                  [blockSelf.imageView sd_setImageWithURL:self.media.mediaUrlOriginal];
+//                                              }
+                                              
+                                          }];
+                
+                break;
+            }
+            
+            if([info isKindOfClass:[NSArray class]]){
+                if ([info count] > 0) {
+                    self.imageView.image = [(NSArray *)info objectAtIndex:0];
+                } else {
+                    self.imageView.image = nil;
+                }
+            }else{
+                if([info isKindOfClass:[UIImage class]]) {
+                    self.imageView.image = (UIImage *)info;
+                }
+            }
+            break;
+            
+        case kMediaPlayerVideoContentTypeAnimatedGIF:
+            
+//            if(![[self.media.mediaUrl scheme] isEqualToString:@"assets-library"] &&
+//               ![self.media.mediaUrl isFileURL] &&
+//               ![self.media.mediaUrl refersLocalProperty]) {
+//                // from the web
+//                [self setupProgressView];
+//                
+//                __block DACircularProgressView *blockProgressView = self.progressView;
+//                
+//                [self.gifImageView sd_setImageWithURL:self.media.mediaUrl
+//                                     placeholderImage:nil
+//                                              options:0
+//                                             progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+//                                                 CGFloat progress = ((CGFloat)receivedSize / (CGFloat)expectedSize);
+//                                                 dispatch_async(dispatch_get_main_queue(), ^{
+//                                                     [blockProgressView setProgress:progress animated:NO];
+//                                                 });
+//                                             } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+//                                                 [blockProgressView removeFromSuperview];
+//                                                 blockProgressView = nil;
+//                                                 
+//                                                 if(!image || error) {
+//                                                     [self.gifImageView sd_setImageWithURL:self.media.mediaUrlOriginal];
+//                                                 }
+//                                                 
+//                                             }];
+//                
+//                break;
+//            } else if([self.media.mediaUrl refersLocalProperty]) {
+//                FLAnimatedImage *image = [[FLAnimatedImage alloc] initWithAnimatedGIFData:self.media.thumbedContent];
+//                [self.gifImageView setAnimatedImage:image];
+//            }
+//            
+//            
+//            if([info isKindOfClass:[NSArray class]]){
+//                if ([info count] > 0 && [[(NSArray *)info objectAtIndex:0] isKindOfClass:[FLAnimatedImage class]]) {
+//                    self.gifImageView.animatedImage = [(NSArray *)info objectAtIndex:0];
+//                } else {
+//                    self.gifImageView.animatedImage = nil;
+//                }
+//            }else{
+//                if([info isKindOfClass:[FLAnimatedImage class]]) {
+//                    self.gifImageView.animatedImage = (FLAnimatedImage *)info;
+//                }
+//            }
+            break;
+            
+        case kMediaPlayerVideoContentTypeGPUImageMovie: {
+            
+            if(![[self.media.thumbUrl scheme] isEqualToString:@"assets-library"] &&
+               ![self.media.thumbUrl isFileURL] &&
+               ![self.media.thumbUrl refersLocalProperty])
+            {
+                // from the web
+                [self setupProgressView];
+                
+                __block DACircularProgressView *blockProgressView = self.progressView;
+                
+//                __block MediaPlayerView *blockSelf = self;
+                
+                [self.imageView sd_setImageWithURL:self.media.thumbUrl
+                                  placeholderImage:nil
+                                           options:0
+                                          progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                                              CGFloat progress = ((CGFloat)receivedSize / (CGFloat)expectedSize);
+                                              dispatch_async(dispatch_get_main_queue(), ^{
+                                                  [blockProgressView setProgress:progress animated:NO];
+                                              });
+                                          } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                              
+                                              
+//                                              NSString *urlString = [self.media.thumbUrl absoluteString];
+//                                              if(image.size.width > 0.0 && image.size.height > 0.0)
+//                                              {
+//                                                  if(blockSelf.delegate && [blockSelf.delegate respondsToSelector:@selector(mediaPlayerWantsResizeWithMediaSize:forUrlString:)]) {
+//                                                      dispatch_async(dispatch_get_main_queue(), ^{
+//                                                          [blockSelf.delegate mediaPlayerWantsResizeWithMediaSize:image.size forUrlString:urlString];
+//                                                      });
+//                                                      
+//                                                  }
+//                                              }
+                                              
+                                              [blockProgressView removeFromSuperview];
+                                              blockProgressView = nil;
+                                              
+//                                              if(!image || error) {
+//                                                  NSLog(@" error in loading thumbnail");
+//                                                  [blockSelf.imageView sd_setImageWithURL:self.media.mediaUrlOriginal];
+//                                              }
+                                              
+                                          }];
+                
+                break;
+            }
+            
+            if([info isKindOfClass:[NSArray class]]){
+                if ([info count] > 0) {
+                    self.imageView.image = [(NSArray *)info objectAtIndex:0];
+                } else {
+                    self.imageView.image = nil;
+                }
+            }else{
+                if([info isKindOfClass:[UIImage class]]) {
+                    self.imageView.image = (UIImage *)info;
+                }
+            }
+            
+            break;
+        }
+            
+        default:
+            break;
+    }
+    
+}
+
+- (void)startContentSupply:(id)info {
+}
+
+- (void)supplyVideoContent:(void *)content info:(id)info {
+}
+
+- (void)supplyAudioContent:(void *)content info:(id)info {
+}
+
+- (void)stopContentSupply:(id)info {
+}
+
+- (void)contentWillBeCleared:(id)info {
+    
+}
+
+- (void)setAspectRatio:(UIViewContentMode)contentMode {
+    [UIView animateWithDuration:.3 animations:^{
+        self.imageView.contentMode = contentMode;
+        self.gifImageView.contentMode = contentMode;
+        
+        if(contentMode == UIViewContentModeScaleAspectFill) {
+            _playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        }else if(contentMode == UIViewContentModeScaleAspectFit) {
+            _playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;
+        }
+    }];
+}
+
+#pragma mark - Video Helper Methods
+/**
+ * This method is called to set up video slider duration to display on the screen.
+ */
+- (void)setupVideoSliderDuration;
+{
+    CGFloat duration = CMTimeGetSeconds(self.moviePlayer.currentItem.duration);
+    
+    [self.movieSlider setMinimumValue:0.0];
+    [self.movieSlider setMaximumValue:duration];
+    
+    self.timePlayed = CMTimeGetSeconds(self.moviePlayer.currentTime);
+    
+    CMTime interval = CMTimeMakeWithSeconds(1.0, NSEC_PER_SEC); // 1 second
+    
+    __block MediaPlayerView *blockSelf = self;
+    
+    @try {
+        [self.moviePlayer removeTimeObserver:self];
+    }
+    @catch (NSException *exception) {
+        // do nothing
+    }
+    
+    [self.moviePlayer addPeriodicTimeObserverForInterval:interval queue:NULL usingBlock:^(CMTime time) {
+        [blockSelf.movieSlider setTimePlayed:CMTimeGetSeconds(blockSelf.moviePlayer.currentTime) animated:YES];
+        
+        if(!blockSelf.sliderIsActive && blockSelf.status == kMediaPlayerStatusPlaying) {
+            // fade out slider after 3 seconds
+            if((CMTimeGetSeconds(blockSelf.moviePlayer.currentTime) - blockSelf.timePlayed) > 3.0) {
+                
+                [blockSelf hideMovieSlider:YES];
+            }
+            
+        }
+        
+        
+    }];
+    
+}
+
+/**
+ *  This method returns the total amount of time that the movie player has been buffered and is available to play
+ */
+- (NSTimeInterval)moviebufferDuration;
+{
+    NSArray *loadedTimeRanges = [[self.moviePlayer currentItem] loadedTimeRanges];
+    CMTimeRange timeRange = [[loadedTimeRanges objectAtIndex:0] CMTimeRangeValue];
+    Float64 startSeconds = CMTimeGetSeconds(timeRange.start);
+    Float64 durationSeconds = CMTimeGetSeconds(timeRange.duration);
+    NSTimeInterval result = startSeconds + durationSeconds;
+    return result;
+}
+
+
+#pragma mark - VXViewMovieSliderDelegate
+
+- (void)sliderValueChanged:(BGViewMovieSlider *)movieSlider value:(CGFloat)newValue {
+    
+    CMTime newTime = CMTimeMakeWithSeconds(newValue, self.moviePlayer.currentTime.timescale);
+    
+    [self.moviePlayer seekToTime:newTime toleranceBefore:kCMTimeZero toleranceAfter:kCMTimeZero];
+    [self.movieSlider setTimePlayed:CMTimeGetSeconds(newTime) animated:NO];
+    self.timePlayed = CMTimeGetSeconds(self.moviePlayer.currentTime);
+    
+}
+
+- (void)sliderBecameActive:(BGViewMovieSlider *)movieSlider {
+    [self.moviePlayer pause];
+    _sliderIsActive = YES;
+}
+
+- (void)sliderBecameInactive:(BGViewMovieSlider *)movieSlider {
+    if(_status == kMediaPlayerStatusPlaying) {
+        [self.moviePlayer play];
+        self.timePlayed = CMTimeGetSeconds(self.moviePlayer.currentTime);
+    }
+    _sliderIsActive = NO;
+}
+
+
+#pragma mark - Observing
+
+/**
+ * This message is sent to the receiver when the value at the specified key path relative to the given object has changed.
+ */
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    //    if(_lastActivePlayer != self) {
+    //        return;
+    //    }
+    
+    if ([object isKindOfClass:[AVPlayerItem class]] && object == self.moviePlayer.currentItem)
+    {
+        AVPlayerItem *item = (AVPlayerItem *)object;
+        //playerItem status value changed?
+        if ([keyPath isEqualToString:@"status"])
+        {   //yes->check it...
+            switch(item.status)
+            {
+                case AVPlayerItemStatusFailed:
+                    NSLog(@"player item status failed");
+                    break;
+                case AVPlayerItemStatusReadyToPlay:
+                {
+//                    NSLog(@"player item status is ready to play");
+                    
+                    [self setupVideoSliderDuration];
+                    
+                    if(self.status == kMediaPlayerStatusPlaying) {
+                        [self showLoadingIndicator];
+                    }
+                    
+                    break;
+                }
+                case AVPlayerItemStatusUnknown:
+//                    NSLog(@"player item status is unknown");
+                    break;
+            }
+        } else if ([keyPath isEqualToString:@"playbackLikelyToKeepUp"])
+        {
+            if (item.playbackLikelyToKeepUp)
+            {
+//                NSLog(@"player item likely to keep up");
+                [self.loadingIndicator hide:NO];
+                
+                if(self.status == kMediaPlayerStatusPlaying) {
+                    //[self.moviePlayer pause];
+                    [self.moviePlayer play];
+                }
+            } else {
+                NSLog(@"buffering");
+                
+                if(self.status == kMediaPlayerStatusPlaying) {
+                    [self.moviePlayer pause];
+                    [self showLoadingIndicator];
+                }
+            }
+        } else if([keyPath isEqualToString:@"playbackBufferEmpty"]) {
+            if (item.playbackBufferEmpty)
+            {
+                NSLog(@"player item playback buffer is empty");
+            } else {
+                if(self.status == kMediaPlayerStatusPlaying) {
+                    [self.moviePlayer pause];
+                    [self showLoadingIndicator];
+                }
+                NSLog(@"buffering");
+            }
+        } else if ([keyPath isEqualToString:@"loadedTimeRanges"]) {
+            // loaded time ranges
+            [self.movieSlider setBufferValue:([self moviebufferDuration] / CMTimeGetSeconds(self.moviePlayer.currentItem.duration))];
+        }
+    }
+    [self layoutSubviews];
+}
+
+<<<<<<< HEAD
+- (void)downloadAudioFile {
+    
+    if(self.media.musicItem == nil) {
+        NSLog(@"ERROR: This media player does not have a music item attached to it.");
+        return;
+    }
+
+    self.musicPlayer = [[AVPlayer alloc] initWithPlayerItem:[[AVPlayerItem alloc] initWithURL:self.media.musicItem.previewURL]];
+
+    @try{
+        [self.musicPlayer.currentItem removeObserver:self forKeyPath:@"status"];
+        [self.musicPlayer.currentItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
+        [self.musicPlayer.currentItem removeObserver:self forKeyPath:@"playbackLikelyToKeepUp"];
+
+    }@catch(id anException){
+//        NSLog(@"Exception [prepareToVideoContentType] - Failed to remove status observer");
+    }
+    
+//    @try{
+//        
+//    }@catch(id anException){
+//        NSLog(@"Exception [prepareToVideoContentType] - Failed to remove playbackBufferEmpty observer");
+//        
+//    }
+//    
+//    @try{
+//        
+//    }@catch(id anException){
+//        NSLog(@"Exception [prepareToVideoContentType] - Failed to remove playbackLikelyToKeepUp observer");
+//    }
+    
+    @try{
+        [self.musicPlayer.currentItem addObserver:self forKeyPath:@"status" options:0 context:nil];
+        [self.musicPlayer.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:0 context:nil];
+        [self.musicPlayer.currentItem addObserver:self forKeyPath:@"playbackLikelyToKeepUp" options:0 context:nil];
+        [self.musicPlayer.currentItem addObserver:self forKeyPath:@"loadedTimeRanges" options:0 context:nil];
+        
+    }@catch(id exception) {
+//        NSLog(@"Exception: Failed to add observers to music player");
+        
+        // do nothing
+    }
+    
+    if(!_isMusicLoaded) {
+        [self.musicPlayer play];
+        [self.musicPlayer pause];
+    }
+}
+
+=======
+>>>>>>> altMoviePlayer
+@end

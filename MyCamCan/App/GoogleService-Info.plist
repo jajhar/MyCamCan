@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AD_UNIT_ID_FOR_BANNER_TEST</key>
+	<string>ca-app-pub-3940256099942544/2934735716</string>
+	<key>AD_UNIT_ID_FOR_INTERSTITIAL_TEST</key>
+	<string>ca-app-pub-3940256099942544/4411468910</string>
+	<key>CLIENT_ID</key>
+	<string>982832446909-bpqj5uf4q28s6m63rm6koejpv03gml7p.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.982832446909-bpqj5uf4q28s6m63rm6koejpv03gml7p</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAQ0ofMclvChhNrwWDTcivdG-cB4QtxRKg</string>
+	<key>GCM_SENDER_ID</key>
+	<string>982832446909</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.DeytoAjhar.mycamcan</string>
+	<key>PROJECT_ID</key>
+	<string>vigo-174823</string>
+	<key>STORAGE_BUCKET</key>
+	<string>vigo-174823.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<true></true>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<false></false>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:982832446909:ios:ab9a577d7c401ca3</string>
+	<key>DATABASE_URL</key>
+	<string>https://vigo-174823.firebaseio.com</string>
+</dict>
+</plist>

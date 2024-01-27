@@ -1,0 +1,29 @@
+//
+//  Prefix header
+//
+//  The contents of this file are implicitly included at the beginning of every source file.
+//
+
+#import <Availability.h>
+
+#ifndef __IPHONE_5_0
+#warning "This project uses features only available in iOS SDK 5.0 and later."
+#endif
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <SystemConfiguration/SystemConfiguration.h>
+    #import <MobileCoreServices/MobileCoreServices.h>
+    #import <AssetsLibrary/AssetsLibrary.h>
+    #import <ImageIO/ImageIO.h>
+    #import <CoreText/CoreText.h>
+    #import <AVFoundation/AVFoundation.h>
+    #import "AppData.h"
+    #import "BGController.h"
+
+    // SDWebImage
+    #import "UIImageView+WebCache.h"
+    #import "UIView+WebCacheOperation.h"
+    #import "UIImageView+HighlightedWebCache.h"
+
+#endif

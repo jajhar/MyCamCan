@@ -1,0 +1,4 @@
+
+@interface BGControllerNavigation : UINavigationController
+
+@end

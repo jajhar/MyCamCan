@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="s8t-Mp-xMj">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Controller Splash-->
+        <scene sceneID="eQl-j0-EgV">
+            <objects>
+                <viewController storyboardIdentifier="BGControllerSplash" id="s8t-Mp-xMj" customClass="BGControllerSplash" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="HoA-aV-6O2"/>
+                        <viewControllerLayoutGuide type="bottom" id="9Iv-op-RKL"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="0mH-U4-xWX">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Record Video &amp; Edit on the GO" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ub2-NZ-5Yt">
+                                <rect key="frame" x="26" y="250" width="323" height="20.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="MyCamCan_Main" translatesAutoresizingMaskIntoConstraints="NO" id="DYP-au-uPq">
+                                <rect key="frame" x="112.5" y="170" width="150" height="60"/>
+                                <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="150" id="guX-GK-P3w"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Made in Glendale, CA" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qEI-Sx-KUu">
+                                <rect key="frame" x="26" y="631" width="323" height="16"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="Ub2-NZ-5Yt" firstAttribute="top" secondItem="DYP-au-uPq" secondAttribute="bottom" constant="20" id="0RC-xz-ow1"/>
+                            <constraint firstItem="qEI-Sx-KUu" firstAttribute="leading" secondItem="0mH-U4-xWX" secondAttribute="leadingMargin" constant="10" id="Opz-bq-e2R"/>
+                            <constraint firstItem="DYP-au-uPq" firstAttribute="centerY" secondItem="0mH-U4-xWX" secondAttribute="centerY" multiplier="0.6" id="ViZ-bJ-WL2"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="Ub2-NZ-5Yt" secondAttribute="trailing" constant="10" id="VyA-hx-oAe"/>
+                            <constraint firstItem="9Iv-op-RKL" firstAttribute="top" secondItem="qEI-Sx-KUu" secondAttribute="bottom" constant="20" id="ZMQ-FG-cV0"/>
+                            <constraint firstItem="Ub2-NZ-5Yt" firstAttribute="centerX" secondItem="0mH-U4-xWX" secondAttribute="centerX" id="hp9-S8-lVk"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="qEI-Sx-KUu" secondAttribute="trailing" constant="10" id="hu9-ui-gzj"/>
+                            <constraint firstItem="DYP-au-uPq" firstAttribute="centerX" secondItem="0mH-U4-xWX" secondAttribute="centerX" id="iOX-CT-YjS"/>
+                            <constraint firstItem="Ub2-NZ-5Yt" firstAttribute="leading" secondItem="0mH-U4-xWX" secondAttribute="leadingMargin" constant="10" id="jd4-lU-JGV"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="Vp4-vX-Pwe"/>
+                    <nil key="simulatedTopBarMetrics"/>
+                    <connections>
+                        <outlet property="camCanLabel" destination="Ub2-NZ-5Yt" id="PsH-3f-Vuv"/>
+                        <outlet property="logoImageView" destination="DYP-au-uPq" id="vLa-tC-NVB"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="JTt-em-Ro7" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1230" y="310"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="MyCamCan_Main" width="160" height="60"/>
+    </resources>
+</document>

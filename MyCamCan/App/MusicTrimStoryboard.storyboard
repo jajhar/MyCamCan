@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="nrm-Lx-VET">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Controller Music Trim-->
+        <scene sceneID="4vk-ee-yag">
+            <objects>
+                <viewController storyboardIdentifier="BGControllerMusicTrim" id="nrm-Lx-VET" customClass="BGControllerMusicTrim" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="TnG-1A-rDh"/>
+                        <viewControllerLayoutGuide type="bottom" id="ZVB-mq-Zc4"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="9jd-Zm-mWj">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="z4c-YC-TUX" customClass="SAMultisectorControl">
+                                <rect key="frame" x="27.5" y="173.5" width="320" height="320"/>
+                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="320" id="paz-gx-g7T"/>
+                                    <constraint firstAttribute="height" constant="320" id="syF-Jj-VTn"/>
+                                </constraints>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="asY-2u-qiu">
+                                <rect key="frame" x="162" y="307.5" width="52" height="52"/>
+                                <state key="normal" image="PlayBtn">
+                                    <color key="titleColor" red="1" green="0.5" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="playButtonPressed:" destination="nrm-Lx-VET" eventType="touchUpInside" id="LS8-mC-TAe"/>
+                                </connections>
+                            </button>
+                            <view clipsSubviews="YES" alpha="0.5" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="taG-V9-xV2">
+                                <rect key="frame" x="161.5" y="307.5" width="52" height="52"/>
+                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0 Seconds" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dcF-l6-KE7">
+                                <rect key="frame" x="128.5" y="114.5" width="119" height="29"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="24"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XYJ-Le-Tm5">
+                                <rect key="frame" x="74.5" y="587" width="227" height="40"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4HY-Nc-fXC">
+                                        <rect key="frame" x="0.0" y="0.0" width="40" height="40"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <state key="normal" image="checkmark-off"/>
+                                        <state key="selected" image="checkmark-on"/>
+                                        <connections>
+                                            <action selector="recordAmbientSoundButtonPressed:" destination="nrm-Lx-VET" eventType="touchUpInside" id="oND-Xo-aTU"/>
+                                        </connections>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Record ambient sound" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Xd-r7-Ccc">
+                                        <rect key="frame" x="40" y="0.0" width="187" height="40"/>
+                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="18"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="taG-V9-xV2" firstAttribute="centerX" secondItem="9jd-Zm-mWj" secondAttribute="centerX" id="6cB-5A-LiN"/>
+                            <constraint firstItem="ZVB-mq-Zc4" firstAttribute="top" secondItem="XYJ-Le-Tm5" secondAttribute="bottom" constant="40" id="BlB-TJ-IMp"/>
+                            <constraint firstItem="taG-V9-xV2" firstAttribute="centerY" secondItem="9jd-Zm-mWj" secondAttribute="centerY" id="FQK-VB-aPK"/>
+                            <constraint firstItem="asY-2u-qiu" firstAttribute="centerY" secondItem="9jd-Zm-mWj" secondAttribute="centerY" id="N1x-S7-C4Z"/>
+                            <constraint firstItem="z4c-YC-TUX" firstAttribute="centerX" secondItem="9jd-Zm-mWj" secondAttribute="centerX" id="bj6-d7-V1Y"/>
+                            <constraint firstItem="z4c-YC-TUX" firstAttribute="centerY" secondItem="9jd-Zm-mWj" secondAttribute="centerY" id="gjT-08-jpU"/>
+                            <constraint firstItem="XYJ-Le-Tm5" firstAttribute="centerX" secondItem="9jd-Zm-mWj" secondAttribute="centerX" id="iPU-KK-yiw"/>
+                            <constraint firstItem="dcF-l6-KE7" firstAttribute="centerX" secondItem="9jd-Zm-mWj" secondAttribute="centerX" id="jpz-f5-0Bs"/>
+                            <constraint firstItem="z4c-YC-TUX" firstAttribute="top" secondItem="dcF-l6-KE7" secondAttribute="bottom" constant="30" id="lPX-Df-UPM"/>
+                            <constraint firstItem="taG-V9-xV2" firstAttribute="height" secondItem="asY-2u-qiu" secondAttribute="height" id="pMx-dW-g1M"/>
+                            <constraint firstItem="taG-V9-xV2" firstAttribute="width" secondItem="asY-2u-qiu" secondAttribute="width" id="slB-J9-Oxp"/>
+                            <constraint firstItem="asY-2u-qiu" firstAttribute="centerX" secondItem="9jd-Zm-mWj" secondAttribute="centerX" id="tl3-tk-Pym"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="ambientSoundButton" destination="4HY-Nc-fXC" id="Pgq-pG-0bp"/>
+                        <outlet property="ambientSoundPromptStackView" destination="XYJ-Le-Tm5" id="Cjy-Pg-ta0"/>
+                        <outlet property="multisectorControl" destination="z4c-YC-TUX" id="wjL-3o-yqi"/>
+                        <outlet property="playButton" destination="asY-2u-qiu" id="sZO-kU-pdz"/>
+                        <outlet property="playButtonBackgroundView" destination="taG-V9-xV2" id="7f4-1c-st0"/>
+                        <outlet property="totalSecondsLabel" destination="dcF-l6-KE7" id="KE0-8H-z8b"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="BHt-0p-f0C" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-127" y="3900"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="PlayBtn" width="52" height="52"/>
+        <image name="checkmark-off" width="40" height="40"/>
+        <image name="checkmark-on" width="40" height="40"/>
+    </resources>
+</document>
